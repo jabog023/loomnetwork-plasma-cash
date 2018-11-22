@@ -1,30 +1,21 @@
 #!/bin/bash
 
-mkdir -p gopath/bin ; true
-export GOPATH=`pwd`/gopath
+set -exo pipefail
 
-cd cash_test
-make deps
-make
-make test
-./plasmascash_tester ; true #remove true once finished
+REPO_ROOT=`pwd`
 
-
-
-cd server
+cd $REPO_ROOT/server
 npm install
 npm run lint
 npm run test
 
-cd ../plasma_cash
+cd $REPO_ROOT/loom_test
+export GOPATH=/tmp/gopath-$BUILD_TAG:`pwd`
+make clean
+make deps
+make demos
+make contracts
+make test
 
-virtualenv --python=python3.5 .
-source bin/activate
-pip install -r requirements.txt
-make lint
-
-cd ../
-bash integration_test.sh
-
-# make lint
-# make test
+cd $REPO_ROOT
+REPO_ROOT=`pwd` IS_JENKINS_ENV=true bash loom_integration_test.sh
